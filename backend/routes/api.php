@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\TwoFactor\SetupController;
 use App\Http\Controllers\Api\TwoFactor\ConfirmController;
+use App\Http\Controllers\Api\TwoFactor\RecoveryCodeController;
 
 
 Route::post('/register', RegisterController::class)
@@ -24,5 +25,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/two-factor/confirm', ConfirmController::class)
         ->middleware('throttle:6,1')
         ->name('two-factor.confirm');
+    Route::post('/two-factor/recovery-codes/regenerate', RecoveryCodeController::class)
+        ->middleware('throttle:3,1')
+        ->name('two-factor.recovery-codes.regenerate');
 });
 
