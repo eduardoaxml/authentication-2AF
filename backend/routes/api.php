@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\TwoFactor\SetupController;
 use App\Http\Controllers\Api\TwoFactor\ConfirmController;
 use App\Http\Controllers\Api\TwoFactor\RecoveryCodeController;
-
+use App\Http\Controllers\Api\TwoFactor\ChallengeController;
 
 Route::post('/register', RegisterController::class)
     ->name('register');
@@ -18,6 +18,9 @@ Route::get('/user', function (Request $request) {
 Route::post('/login', LoginController::class)
     ->name('login');
 
+Route::post('/two-factor/challenge', ChallengeController::class)
+    ->middleware('throttle:6,1')
+    ->name('two-factor.challenge');
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/two-factor/setup', SetupController::class)
         ->middleware('throttle:6,1')
@@ -28,5 +31,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/two-factor/recovery-codes/regenerate', RecoveryCodeController::class)
         ->middleware('throttle:3,1')
         ->name('two-factor.recovery-codes.regenerate');
+
 });
 
