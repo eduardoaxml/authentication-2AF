@@ -15,7 +15,7 @@ class TotpServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->totpService = new TotpService();
+        $this->totpService = new TotpService;
     }
 
     public function test_it_generates_a_valid_base32_secret(): void
@@ -53,7 +53,7 @@ class TotpServiceTest extends TestCase
 
         $totp = TOTP::createFromSecret(
             $secret,
-            new InternalClock(),
+            new InternalClock,
         );
 
         $this->assertTrue(

@@ -14,7 +14,7 @@ class TotpService
     public function generateSecret(): string
     {
         return TOTP::generate(
-            new InternalClock(),
+            new InternalClock,
             self::SECRET_SIZE,
         )->getSecret();
     }
@@ -25,7 +25,7 @@ class TotpService
     ): string {
         return TOTP::createFromSecret(
             $secret,
-            new InternalClock(),
+            new InternalClock,
         )
             ->withLabel($email)
             ->withIssuer(config('app.name'))
@@ -42,7 +42,36 @@ class TotpService
 
         return TOTP::createFromSecret(
             $secret,
-            new InternalClock(),
+            new InternalClock,
         )->verify($code, null, self::VERIFICATION_WINDOW);
+    }
+
+    public function getMatchingTimeStep(
+        string $secret,
+        string $code,
+    ): ?int {
+        if (! preg_match('/^\d{6}$/', $code)) {
+            return null;
+        }
+
+        $totp = TOTP::createFromSecret(
+            $secret,
+            new InternalClock,
+        );
+
+        $period = $totp->getPeriod();
+        $currentTimeStep = intdiv(time(), $period);
+
+        for (
+            $timeStep = $currentTimeStep - self::VERIFICATION_WINDOW;
+            $timeStep <= $currentTimeStep + self::VERIFICATION_WINDOW;
+            $timeStep++
+        ) {
+            if ($totp->verify($code, $timeStep * $period, 0)) {
+                return $timeStep;
+            }
+        }
+
+        return null;
     }
 }

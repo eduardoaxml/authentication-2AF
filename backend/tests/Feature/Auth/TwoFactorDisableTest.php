@@ -1,11 +1,13 @@
 <?php
+
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use App\Services\TwoFactor\TotpService;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use OTPHP\InternalClock;
+use OTPHP\TOTP;
 use Tests\TestCase;
 
 class TwoFactorDisableTest extends TestCase
@@ -30,9 +32,9 @@ class TwoFactorDisableTest extends TestCase
         $user = $this->createEnabledUser();
 
         // Generate the current valid TOTP code.
-        $totp = \OTPHP\TOTP::createFromSecret(
+        $totp = TOTP::createFromSecret(
             self::SECRET,
-            new \OTPHP\InternalClock(),
+            new InternalClock,
         );
 
         $response = $this->actingAs($user)->postJson(
@@ -58,9 +60,9 @@ class TwoFactorDisableTest extends TestCase
     {
         $user = $this->createEnabledUser();
 
-        $totp = \OTPHP\TOTP::createFromSecret(
+        $totp = TOTP::createFromSecret(
             self::SECRET,
-            new \OTPHP\InternalClock(),
+            new InternalClock,
         );
 
         $this->actingAs($user)->postJson('/api/two-factor/disable', [
@@ -92,9 +94,9 @@ class TwoFactorDisableTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $totp = \OTPHP\TOTP::createFromSecret(
+        $totp = TOTP::createFromSecret(
             self::SECRET,
-            new \OTPHP\InternalClock(),
+            new InternalClock,
         );
 
         $this->actingAs($user)->postJson('/api/two-factor/disable', [
@@ -112,9 +114,9 @@ class TwoFactorDisableTest extends TestCase
             ['code_hash' => Hash::make('CCCC3333DDDD4444')],
         ]);
 
-        $totp = \OTPHP\TOTP::createFromSecret(
+        $totp = TOTP::createFromSecret(
             self::SECRET,
-            new \OTPHP\InternalClock(),
+            new InternalClock,
         );
 
         $this->actingAs($user)->postJson('/api/two-factor/disable', [

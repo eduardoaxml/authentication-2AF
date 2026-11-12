@@ -3,8 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use OTPHP\InternalClock;
 use OTPHP\TOTP;
@@ -15,6 +15,7 @@ class TwoFactorChallengeTest extends TestCase
     use RefreshDatabase;
 
     private const SECRET = 'JBSWY3DPEHPK3PXP';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -53,7 +54,7 @@ class TwoFactorChallengeTest extends TestCase
 
         $code = TOTP::createFromSecret(
             self::SECRET,
-            new InternalClock(),
+            new InternalClock,
         )->now();
 
         $response = $this->postJson('/api/two-factor/challenge', [

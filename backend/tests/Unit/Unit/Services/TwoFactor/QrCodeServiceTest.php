@@ -9,7 +9,7 @@ class QrCodeServiceTest extends TestCase
 {
     public function test_it_generates_an_svg_qr_code_data_uri(): void
     {
-        $service = new QrCodeService();
+        $service = new QrCodeService;
 
         $dataUri = $service->generateDataUri(
             'otpauth://totp/TwoFactorAuth:test@example.com?secret=ABC123&issuer=TwoFactorAuth',

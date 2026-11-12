@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden([
     'password',
@@ -28,7 +27,8 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
@@ -36,6 +36,7 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
     public function twoFactorRecoveryCodes(): HasMany
     {
         return $this->hasMany(TwoFactorRecoveryCode::class);

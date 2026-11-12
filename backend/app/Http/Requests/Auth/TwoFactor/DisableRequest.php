@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Requests\Auth\TwoFactor;
 
 use Illuminate\Foundation\Http\FormRequest;

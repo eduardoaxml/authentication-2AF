@@ -20,7 +20,7 @@ class TwoFactorConfirmTest extends TestCase
 
         $code = TOTP::createFromSecret(
             'JBSWY3DPEHPK3PXP',
-            new InternalClock(),
+            new InternalClock,
         )->now();
 
         $this->actingAs($user, 'web')

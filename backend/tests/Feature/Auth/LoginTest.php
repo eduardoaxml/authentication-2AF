@@ -3,15 +3,16 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class LoginTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_login_with_valid_credentials(): void{
+    public function test_user_can_login_with_valid_credentials(): void
+    {
         $this->withoutMiddleware(ValidateCsrfToken::class);
 
         $user = User::factory()->create([
@@ -81,6 +82,7 @@ class LoginTest extends TestCase
 
         $this->assertGuest('web');
     }
+
     public function test_user_with_two_factor_enabled_receives_a_challenge_instead_of_authentication(): void
     {
         $this->withoutMiddleware(ValidateCsrfToken::class);

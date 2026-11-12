@@ -15,7 +15,7 @@ class QrCodeService
     public function generateDataUri(string $data): string
     {
         $result = (new Builder(
-            writer: new SvgWriter(),
+            writer: new SvgWriter,
             data: $data,
             errorCorrectionLevel: ErrorCorrectionLevel::Medium,
             size: self::SIZE,
