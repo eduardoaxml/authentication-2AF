@@ -1,6 +1,4 @@
-
 <?php
-
 namespace App\Http\Controllers\Api\TwoFactor;
 
 use App\Http\Controllers\Controller;

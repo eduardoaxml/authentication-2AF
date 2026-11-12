@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\TwoFactor\SetupController;
 use App\Http\Controllers\Api\TwoFactor\ConfirmController;
 use App\Http\Controllers\Api\TwoFactor\RecoveryCodeController;
 use App\Http\Controllers\Api\TwoFactor\ChallengeController;
+use App\Http\Controllers\Api\Auth\LogoutController;
+use App\Http\Controllers\Api\TwoFactor\StatusController;
+use App\Http\Controllers\Api\TwoFactor\DisableController;
 
 Route::post('/register', RegisterController::class)
     ->name('register');
@@ -31,6 +34,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/two-factor/recovery-codes/regenerate', RecoveryCodeController::class)
         ->middleware('throttle:3,1')
         ->name('two-factor.recovery-codes.regenerate');
-
+    Route::post('/logout', LogoutController::class)
+        ->name('logout');
+    Route::get('/two-factor/status', StatusController::class)
+        ->name('two-factor.status');
+    Route::post('/two-factor/disable', DisableController::class)
+        ->middleware('throttle:3,1')
+        ->name('two-factor.disable');
 });
 
