@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\TwoFactor\SetupController;
+use App\Http\Controllers\Api\TwoFactor\ConfirmController;
+
 
 Route::post('/register', RegisterController::class)
     ->name('register');
@@ -19,4 +21,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/two-factor/setup', SetupController::class)
         ->middleware('throttle:6,1')
         ->name('two-factor.setup');
+    Route::post('/two-factor/confirm', ConfirmController::class)
+        ->middleware('throttle:6,1')
+        ->name('two-factor.confirm');
 });
+
