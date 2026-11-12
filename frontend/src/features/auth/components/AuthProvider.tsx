@@ -13,6 +13,7 @@ import type { LoginPayload, RegisterPayload, User } from "../types/auth";
 import {
   completeTwoFactorChallenge,
   getCurrentUser,
+  getTwoFactorChallengeStatus,
   login as loginService,
   logout as logoutService,
   register as registerService,
@@ -34,7 +35,15 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       setUser(currentUser);
       setRequiresTwoFactor(false);
     } catch {
-      setUser(null);
+      try {
+        const challengeStatus = await getTwoFactorChallengeStatus();
+
+        setUser(null);
+        setRequiresTwoFactor(challengeStatus.two_factor_required);
+      } catch {
+        setUser(null);
+        setRequiresTwoFactor(false);
+      }
     } finally {
       setIsLoading(false);
     }

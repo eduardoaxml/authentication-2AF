@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\TwoFactor\ChallengeController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\TwoFactor\StatusController;
 use App\Http\Controllers\Api\TwoFactor\DisableController;
+use App\Http\Controllers\Api\TwoFactor\ChallengeStatusController;
 
 Route::post('/register', RegisterController::class)
     ->name('register');
@@ -41,5 +42,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/two-factor/disable', DisableController::class)
         ->middleware('throttle:3,1')
         ->name('two-factor.disable');
+    Route::get('/two-factor/challenge/status', ChallengeStatusController::class)
+        ->name('two-factor.challenge.status');
 });
 

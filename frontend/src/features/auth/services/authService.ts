@@ -17,6 +17,7 @@ import type {
   TwoFactorDisableResponse,
   TwoFactorSetupResponse,
   TwoFactorStatus,
+  TwoFactorChallengeStatusResponse,
 } from "../types/twoFactor";
 
 export async function getCsrfCookie(): Promise<void> {
@@ -118,6 +119,14 @@ export async function disableTwoFactor(
   const response = await api.post<TwoFactorDisableResponse>(
     "/api/two-factor/disable",
     payload,
+  );
+
+  return response.data;
+}
+
+export async function getTwoFactorChallengeStatus(): Promise<TwoFactorChallengeStatusResponse> {
+  const response = await api.get<TwoFactorChallengeStatusResponse>(
+    "/api/two-factor/challenge/status",
   );
 
   return response.data;

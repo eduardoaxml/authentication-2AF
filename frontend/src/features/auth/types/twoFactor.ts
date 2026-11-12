@@ -43,3 +43,7 @@ export interface TwoFactorDisableResponse {
   message: string;
   two_factor_enabled: false;
 }
+
+export interface TwoFactorChallengeStatusResponse {
+  two_factor_required: boolean;
+}
