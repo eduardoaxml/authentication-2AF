@@ -81,4 +81,34 @@ class LoginTest extends TestCase
 
         $this->assertGuest('web');
     }
+    public function test_user_with_two_factor_enabled_receives_a_challenge_instead_of_authentication(): void
+    {
+        $this->withoutMiddleware(ValidateCsrfToken::class);
+
+        $user = User::factory()->create([
+            'email' => 'two-factor@example.com',
+            'password' => 'password123',
+            'two_factor_secret' => 'JBSWY3DPEHPK3PXP',
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $response = $this->withHeaders([
+            'Origin' => 'http://localhost:5173',
+        ])->postJson('/api/login', [
+            'email' => 'two-factor@example.com',
+            'password' => 'password123',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('two_factor_required', true)
+            ->assertJsonMissingPath('user');
+
+        $this->assertGuest('web');
+
+        $this->assertSame(
+            $user->getKey(),
+            session('auth.two_factor_pending_user_id'),
+        );
+    }
 }
