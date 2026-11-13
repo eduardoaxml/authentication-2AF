@@ -8,14 +8,17 @@ import DashboardPage from "../features/auth/pages/DashboardPage";
 import TwoFactorChallengePage from "../features/auth/pages/TwoFactorChallengePage";
 import TwoFactorSetupPage from "../features/auth/pages/TwoFactorSetupPage";
 import SecuritySettingsPage from "../features/auth/pages/SecuritySettingsPage";
+import AuthLayout from "../features/auth/components/AuthLayout";
 
 export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />

@@ -1,3 +1,6 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color: #1f2937;
@@ -22,6 +25,10 @@ body {
 button,
 input {
   font: inherit;
+}
+
+button {
+  cursor: pointer;
 }
 
 #root {
