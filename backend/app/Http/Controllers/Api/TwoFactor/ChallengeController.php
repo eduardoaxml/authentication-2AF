@@ -9,6 +9,7 @@ use App\Services\TwoFactor\RecoveryCodeService;
 use App\Services\TwoFactor\TotpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ChallengeController extends Controller
@@ -61,9 +62,51 @@ class ChallengeController extends Controller
 
         $code = $request->validated('code');
 
-        $isValid = preg_match('/^\d{6}$/', $code)
-            ? $totpService->verifyCode($user->two_factor_secret, $code)
-            : $recoveryCodeService->consume($user, $code);
+        if (preg_match('/^\d{6}$/', $code)) {
+            $isValid = DB::transaction(function () use (
+                $user,
+                $code,
+                $totpService,
+            ): bool {
+                $lockedUser = User::query()
+                    ->lockForUpdate()
+                    ->find($user->getKey());
+
+                if (
+                    $lockedUser === null
+                    || $lockedUser->two_factor_confirmed_at === null
+                    || $lockedUser->two_factor_secret === null
+                ) {
+                    return false;
+                }
+
+                $timeStep = $totpService->getMatchingTimeStep(
+                    $lockedUser->two_factor_secret,
+                    $code,
+                );
+
+                if ($timeStep === null) {
+                    return false;
+                }
+
+                $lastUsedTimeStep = $lockedUser->two_factor_last_used_at;
+
+                if (
+                    $lastUsedTimeStep !== null
+                    && $timeStep <= (int) $lastUsedTimeStep
+                ) {
+                    return false;
+                }
+
+                $lockedUser->forceFill([
+                    'two_factor_last_used_at' => $timeStep,
+                ])->save();
+
+                return true;
+            });
+        } else {
+            $isValid = $recoveryCodeService->consume($user, $code);
+        }
 
         if (! $isValid) {
             throw ValidationException::withMessages([

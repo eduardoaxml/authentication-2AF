@@ -24,11 +24,12 @@ Route::get('/user', function (Request $request) {
 Route::post('/login', LoginController::class)
     ->middleware('throttle:10,1')
     ->name('login');
-
 Route::post('/two-factor/challenge', ChallengeController::class)
     ->middleware('throttle:6,1')
-    ->block(10, 10)
     ->name('two-factor.challenge');
+Route::get('/two-factor/challenge/status', ChallengeStatusController::class)
+    ->name('two-factor.challenge.status');
+
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/two-factor/setup', SetupController::class)
         ->middleware('throttle:6,1')
@@ -41,11 +42,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
         ->name('two-factor.recovery-codes.regenerate');
     Route::post('/logout', LogoutController::class)
         ->name('logout');
-    Route::get('/two-factor/status', StatusController::class)
-        ->name('two-factor.status');
     Route::post('/two-factor/disable', DisableController::class)
         ->middleware('throttle:3,1')
         ->name('two-factor.disable');
-    Route::get('/two-factor/challenge/status', ChallengeStatusController::class)
-        ->name('two-factor.challenge.status');
+    Route::get('/two-factor/status', StatusController::class)
+        ->name('two-factor.status');
 });

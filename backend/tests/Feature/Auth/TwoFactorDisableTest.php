@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Services\TwoFactor\TotpService;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -53,7 +54,40 @@ class TwoFactorDisableTest extends TestCase
             'id' => $user->id,
             'two_factor_secret' => null,
             'two_factor_confirmed_at' => null,
+            'two_factor_last_used_at' => null,
         ]);
+    }
+
+    public function test_user_cannot_disable_two_factor_with_a_previously_used_totp_code(): void
+    {
+        $user = $this->createEnabledUser();
+
+        $totp = TOTP::createFromSecret(
+            self::SECRET,
+            new InternalClock,
+        );
+
+        $code = $totp->now();
+
+        $timeStep = app(TotpService::class)->getMatchingTimeStep(
+            self::SECRET,
+            $code,
+        );
+
+        $this->assertNotNull($timeStep);
+
+        $user->forceFill([
+            'two_factor_last_used_at' => $timeStep,
+        ])->save();
+
+        $this->actingAs($user)->postJson('/api/two-factor/disable', [
+            'password' => 'password123',
+            'code' => $code,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['code']);
+
+        $this->assertNotNull($user->fresh()->two_factor_confirmed_at);
     }
 
     public function test_user_cannot_disable_two_factor_with_an_incorrect_password(): void

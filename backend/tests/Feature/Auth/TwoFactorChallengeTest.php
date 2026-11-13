@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use OTPHP\InternalClock;
 use OTPHP\TOTP;
@@ -67,6 +68,10 @@ class TwoFactorChallengeTest extends TestCase
             ->assertJsonPath('user.email', $user->email);
 
         $this->assertAuthenticatedAs($user, 'web');
+
+        $this->assertNotNull(
+            $user->refresh()->two_factor_last_used_at,
+        );
 
         $this->assertNull(session('auth.two_factor_pending_user_id'));
     }
@@ -170,5 +175,80 @@ class TwoFactorChallengeTest extends TestCase
         ])->assertUnauthorized();
 
         $this->assertGuest('web');
+    }
+
+    public function test_totp_code_cannot_be_used_twice(): void
+    {
+        $user = User::factory()->create([
+            'two_factor_secret' => self::SECRET,
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $this->createPendingChallenge($user);
+
+        $code = TOTP::createFromSecret(
+            self::SECRET,
+            new InternalClock,
+        )->now();
+
+        $this->postJson('/api/two-factor/challenge', [
+            'code' => $code,
+        ])->assertOk();
+
+        Auth::guard('web')->logout();
+
+        $this->createPendingChallenge($user);
+
+        $this->postJson('/api/two-factor/challenge', [
+            'code' => $code,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['code']);
+
+        $this->assertGuest('web');
+    }
+
+    public function test_new_totp_time_step_is_accepted(): void
+    {
+        $user = User::factory()->create([
+            'two_factor_secret' => self::SECRET,
+            'two_factor_confirmed_at' => now(),
+            'two_factor_last_used_at' => intdiv(time(), 30) - 1,
+        ]);
+
+        $this->createPendingChallenge($user);
+
+        $code = TOTP::createFromSecret(
+            self::SECRET,
+            new InternalClock,
+        )->now();
+
+        $this->postJson('/api/two-factor/challenge', [
+            'code' => $code,
+        ])
+            ->assertOk()
+            ->assertJsonPath('message', 'Login successful.');
+
+        $this->assertAuthenticatedAs($user, 'web');
+    }
+
+    public function test_invalid_totp_code_does_not_update_last_used_time_step(): void
+    {
+        $user = User::factory()->create([
+            'two_factor_secret' => self::SECRET,
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $this->createPendingChallenge($user);
+
+        $this->postJson('/api/two-factor/challenge', [
+            'code' => '000000',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['code']);
+
+        $this->assertNull(
+            $user->refresh()->two_factor_last_used_at,
+        );
     }
 }

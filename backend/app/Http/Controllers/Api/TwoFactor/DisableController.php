@@ -35,12 +35,22 @@ class DisableController extends Controller
                 abort(409, 'Two-factor authentication is not enabled.');
             }
 
-            if (! $totpService->verifyCode(
+            $timeStep = $totpService->getMatchingTimeStep(
                 $user->two_factor_secret,
                 $request->validated('code'),
-            )) {
+            );
+
+            $lastUsedTimeStep = $user->two_factor_last_used_at;
+
+            if (
+                $timeStep === null
+                || (
+                    $lastUsedTimeStep !== null
+                    && $timeStep <= (int) $lastUsedTimeStep
+                )
+            ) {
                 throw ValidationException::withMessages([
-                    'code' => ['The provided authentication code is invalid.'],
+                    'code' => ['The provided authentication code is invalid or has already been used.'],
                 ]);
             }
 
@@ -49,6 +59,7 @@ class DisableController extends Controller
             $user->forceFill([
                 'two_factor_secret' => null,
                 'two_factor_confirmed_at' => null,
+                'two_factor_last_used_at' => null,
             ])->save();
         });
 

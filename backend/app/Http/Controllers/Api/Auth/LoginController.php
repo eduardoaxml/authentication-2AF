@@ -32,8 +32,13 @@ class LoginController extends Controller
         $user = User::query()
             ->where('email', $credentials['email'])
             ->firstOrFail();
+        $request->session()->forget([
+            self::TWO_FACTOR_PENDING_USER,
+            self::TWO_FACTOR_PENDING_EXPIRES,
+        ]);
 
         if ($user->two_factor_confirmed_at !== null) {
+            $guard->logout();
             $request->session()->put([
                 self::TWO_FACTOR_PENDING_USER => $user->getKey(),
                 self::TWO_FACTOR_PENDING_EXPIRES => now()
